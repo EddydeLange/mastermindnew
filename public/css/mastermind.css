@@ -1,7 +1,6 @@
 .mastermind table{
     margin-left: auto;
     margin-right: auto;
-    width: 200px;
 }
 
 .mastermind td {
@@ -13,10 +12,13 @@
     -moz-border-radius: 50px/50px;
     -webkit-border-radius: 50px 50px;
     border-radius: 50px/50px;
-
+}
+.mastermind td.smallCircles{
+    width: 10px;
+    height: 22px;
+    background-color: #ccc;
 }
 .mastermind .levelButton{
     width: 100px;
     height: 50px;
-
 }

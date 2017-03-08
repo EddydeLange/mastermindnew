@@ -15,3 +15,19 @@
 .yellow{
     background-color: #f4eb42;
 }
+.pink{
+    background-color: #f442e2;
+}
+.orange{
+    background-color: #eda342;
+}
+.lightGreen{
+    background-color: #2def44;
+}
+
+.errorRed{
+    background-color: red !important;
+}
+.errorWhite{
+    background-color: white !important;
+}
