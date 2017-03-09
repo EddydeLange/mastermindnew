@@ -95,50 +95,15 @@ function createOptionsColors(colors, levelGame) {
 //Check code user with code computer
 function checkCode(codeToGuess, chosenColor, rows) {
     var errorsCode = 0;
-    var colorsRightPlace = []
-    var correctcode = true;
-    //Correct
-    for(var placeVal = codeToGuess.length; placeVal--;) {
-        //put id in an val
-        var errorElementId = 'rows'+rows+'columnsError'+errorsCode+'';
-        //find element with the id
-        var errorElement = document.getElementById(errorElementId);
-
-        if(codeToGuess[placeVal] == chosenColor[placeVal]) {
-            errorElement.className += " errorRed";
-            errorsCode++
-            colorsRightPlace.push(chosenColor[placeVal]);
-        }
-    }
-    //Incorrect
-    for (var placeVal = codeToGuess.length; placeVal--;) {
-        if(codeToGuess[placeVal] !== chosenColor[placeVal]) {
-
-            correctcode = false;
-            //search for value if it exists
-            var exists = codeToGuess.indexOf(chosenColor[placeVal]);
-            console.log(exists);
-            var colorRightPlace = colorsRightPlace;
-            for (var codeRight = colorRightPlace.length; codeRight--;) {
-
-
-                var test = colorRightPlace.indexOf(codeRight[placeVal]);
-                if (test == -1) {
-                    if (exists !== -1) {
-
-                        //Give element an class
-                        errorElement.className += " errorWhite";
-                        errorsCode++
-                    }
-                }
-                else{
-                    codeRight[placeVal] = '';
-                }
-/*
-function checkCode(codeToGuess, chosenColor, rows) {
-    var errorsCode = 0;
     var colorRightPlace = []
     var correctcode = true;
+
+    for(var placeVal = codeToGuess.length; placeVal--;) {
+        if(codeToGuess[placeVal] == chosenColor[placeVal]) {
+            colorRightPlace.push(chosenColor[placeVal]);
+        }
+    }
+
     for(var placeVal = codeToGuess.length; placeVal--;) {
         //put id in an val
         var errorElementId = 'rows'+rows+'columnsError'+errorsCode+'';
@@ -150,23 +115,24 @@ function checkCode(codeToGuess, chosenColor, rows) {
             //search for value if it exists
             var exists = codeToGuess.indexOf(chosenColor[placeVal]);
 
-            if (exists !== -1) {
-                //Give element an class
-                errorElement.className += " errorWhite";
-                errorsCode++
+            var inArray = colorRightPlace.indexOf(chosenColor[placeVal]);
+            console.log(colorRightPlace);
+            if (inArray == -1) {
+                if (exists !== -1) {
+                    //Give element an class
+                    errorElement.className += " errorWhite";
+                    errorsCode++
+                }
             }
+
         } else if(codeToGuess[placeVal] == chosenColor[placeVal]) {
             errorElement.className += " errorRed";
             errorsCode++
-            colorRightPlace
         }
     }
-*/
-            }
 
 
-        }
-    }
+
     document.getElementById('rows'+rows).setAttribute('data-done', 'true');
 
     return correctcode;
