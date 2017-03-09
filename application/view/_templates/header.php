@@ -35,12 +35,6 @@
             </li>
 
             <?php if (Session::userIsLoggedIn()) { ?>
-                <li <?php if (View::checkForActiveController($filename, "dashboard")) { echo ' class="active" '; } ?> >
-                    <a href="<?php echo Config::get('URL'); ?>dashboard/index">Dashboard</a>
-                </li>
-                <li <?php if (View::checkForActiveController($filename, "note")) { echo ' class="active" '; } ?> >
-                    <a href="<?php echo Config::get('URL'); ?>note/index">My Notes</a>
-                </li>
                 <li <?php if (View::checkForActiveController($filename, "mastermind")) { echo ' class="active" '; } ?> >
                     <a href="<?php echo Config::get('URL'); ?>mastermind/index">mastermind</a>
                 </li>

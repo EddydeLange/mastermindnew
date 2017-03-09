@@ -10,14 +10,14 @@ function loadHtml() {
 
 //create html for the game
 function createGame(colors, levelGame) {
-    //How much columns
-    var columnsCode = 10;
+    //How much rows
+    var rowsCode = 10;
     //Calls functions
-    createRowsColumns(levelGame, columnsCode);
+    createRowsColumns(levelGame, rowsCode);
     createOptionsColors(colors, levelGame)
     //Creates code to guess
     var codeToGuess = createCode(colors, levelGame);
-    clickColors(colors, levelGame, codeToGuess, columnsCode);
+    clickColors(colors, levelGame, codeToGuess, rowsCode);
 }
 
 //Create buttons with level
@@ -50,21 +50,21 @@ function chooseLevel(colors) {
     }
 }
 
-function createRowsColumns(levelGame, columnsCode) {
+function createRowsColumns(levelGame, rowsCode) {
     //creating var's
     var answersUser = '';
     //Creates 10 rows
-    for (var i = 0; i < columnsCode; i++) {
+    for (var i = 0; i < rowsCode; i++) {
         //How much rows 2,3....
-        answersUser += '<tr>';
+        answersUser += '<tr id="rows'+i+'" data-done="false">';
             //Creates cirkels where color could put in
             for (var t = 0; t < levelGame; t++) {
-                var ColumnsRows = 'columns'+ i +'rows' + t +'';
+                var ColumnsRows = 'rows'+ i +'columns' + t +'';
                 answersUser += '<td id="'+ ColumnsRows +'" class="table-responsive"></td>';
             }
             //Creates td with error if position color is correct or not
             for (var a = 0; a < levelGame; a++) {
-                var ColumnsError = 'columns'+ i +'rowsError' + a +'';
+                var ColumnsError = 'rows'+ i +'columnsError' + a +'';
                 answersUser += '<td id="'+ ColumnsError +'" class="smallCircles table-responsive"></td>';
             }
         answersUser += '</tr>';
@@ -93,12 +93,55 @@ function createOptionsColors(colors, levelGame) {
 }
 
 //Check code user with code computer
-function checkCode(codeToGuess, chosenColor, columns) {
+function checkCode(codeToGuess, chosenColor, rows) {
     var errorsCode = 0;
+    var colorsRightPlace = []
+    var correctcode = true;
+    //Correct
+    for(var placeVal = codeToGuess.length; placeVal--;) {
+        //put id in an val
+        var errorElementId = 'rows'+rows+'columnsError'+errorsCode+'';
+        //find element with the id
+        var errorElement = document.getElementById(errorElementId);
+
+        if(codeToGuess[placeVal] == chosenColor[placeVal]) {
+            errorElement.className += " errorRed";
+            errorsCode++
+            colorsRightPlace.push(chosenColor[placeVal]);
+        }
+    }
+    //Incorrect
+    for (var placeVal = codeToGuess.length; placeVal--;) {
+        if(codeToGuess[placeVal] !== chosenColor[placeVal]) {
+
+            correctcode = false;
+            //search for value if it exists
+            var exists = codeToGuess.indexOf(chosenColor[placeVal]);
+            console.log(exists);
+            var colorRightPlace = colorsRightPlace;
+            for (var codeRight = colorRightPlace.length; codeRight--;) {
+
+
+                var test = colorRightPlace.indexOf(codeRight[placeVal]);
+                if (test == -1) {
+                    if (exists !== -1) {
+
+                        //Give element an class
+                        errorElement.className += " errorWhite";
+                        errorsCode++
+                    }
+                }
+                else{
+                    codeRight[placeVal] = '';
+                }
+/*
+function checkCode(codeToGuess, chosenColor, rows) {
+    var errorsCode = 0;
+    var colorRightPlace = []
     var correctcode = true;
     for(var placeVal = codeToGuess.length; placeVal--;) {
         //put id in an val
-        var errorElementId = 'columns'+columns+'rowsError'+errorsCode+'';
+        var errorElementId = 'rows'+rows+'columnsError'+errorsCode+'';
         //find element with the id
         var errorElement = document.getElementById(errorElementId);
 
@@ -109,60 +152,110 @@ function checkCode(codeToGuess, chosenColor, columns) {
 
             if (exists !== -1) {
                 //Give element an class
-                errorElement.className += " errorRed";
+                errorElement.className += " errorWhite";
                 errorsCode++
             }
         } else if(codeToGuess[placeVal] == chosenColor[placeVal]) {
-            errorElement.className += " errorWhite";
+            errorElement.className += " errorRed";
             errorsCode++
+            colorRightPlace
         }
     }
+*/
+            }
+
+
+        }
+    }
+    document.getElementById('rows'+rows).setAttribute('data-done', 'true');
+
     return correctcode;
 }
 
-function clickColors(colors, levelGame, codeToGuess, columnsCode) {
+//Removes color you selected
+function undoColor(rows, elementId, chosenColor, columns) {
+    document.getElementById(elementId).onclick = function() {
+        var dataDone = document.getElementById('rows'+rows).getAttribute('data-done');
+        if (dataDone !== 'true') {
+            //Changes class of color that is chosen
+            document.getElementById(this.id).className = "table-responsive";
+            chosenColor[columns] = '';
+        }
+    }
+}
+
+function addColor(color, chosenColor, elementId, rows, columns) {
+    var changed = false;
+
+    var index = chosenColor.indexOf('');
+    if (index !== -1) {
+        chosenColor[index] = color;
+        //creates class for new position of color
+        elementId = "rows"+rows+"columns"+index;
+        changed = true;
+        columns--
+    }
+    //Changes classname
+    document.getElementById(elementId).className += " "+color;
+    if (changed == false) {
+        //add chosen color in an array
+        chosenColor.push(color);
+    }
+    //Returned array
+    return {
+        chosenColor : chosenColor,
+        columns : columns
+    };
+}
+
+function clickColors(colors, levelGame, codeToGuess, rowsCode) {
     var columns = 0;
     var rows = 0;
     var paragraphText = document.createElement('h2');
     var chosenColor = [];
-
-
     //Foreach color in array creating click function
     colors.forEach(function(color) {
         document.getElementById(color).onclick = function() {
-            //check if your dont cross the limit of columns
-            if (columns < columnsCode) {
-                var elementId = "columns"+columns+"rows"+rows;
-                //Changes classname
-                var currElement = document.getElementById(elementId);
-                currElement.className += " "+color;
+            //check if your dont cross the limit of rows
+            if (rows < rowsCode) {
                 //empty text with error
                 paragraphText.textContent = '';
-                //add chosen color in an array
-                chosenColor.push(color);
-                rows++
+                //Creates var current place
+                var elementId = "rows"+rows+"columns"+columns;
+                //calls function for adding color
+                changedAdd = addColor(color, chosenColor, elementId, rows, columns);
+                //ChangedAdd is an array
+                chosenColor = changedAdd.chosenColor;
+                columns = changedAdd.columns;
+                //Calls funtion for undo color
+                undoColor(rows, elementId, chosenColor, columns);
 
-                if (rows == levelGame) {
-                    correctcode = checkCode(codeToGuess, chosenColor, columns);
+                columns++
+                if (columns == levelGame) {
+                    correctcode = checkCode(codeToGuess, chosenColor, rows);
                     //Correct code
                     if (correctcode == true) {
                         //function nodig
                         paragraphText.textContent = 'Correct';
-                    } else { //Inorrect code
+                    } else { //Incorrect code
                         //empty array
                         chosenColor = [];
                         //Add text to element
                         paragraphText.textContent = 'Incorrect';
                         //new column
-                        columns++
-                        rows = 0;
+                        rows++
+                        columns = 0;
 
-                        if (columnsCode == columns) {
+                        if (rowsCode == rows) {
                             //Add text to element
                             paragraphText.textContent = 'Game-Over';
+
+                            document.getElementById("gameTable").appendChild(paragraphText);
+
                         }
                     }
-                    document.getElementById("gameTable").appendChild(paragraphText);
+                    // var codeWas = document.createElement('h2').textContent = codeToGuess;
+                    // document.getElementById("gameTable").appendChild(codeWas);
                 }
             }
         }
