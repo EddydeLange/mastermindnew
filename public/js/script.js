@@ -1,4 +1,5 @@
 
+var rowsCode = 10;
 function loadHtml() {
     //Get colors
     colors = colorToChoose();
@@ -9,9 +10,7 @@ function loadHtml() {
 }
 
 //create html for the game
-function createGame(colors, levelGame) {
-    //How much rows
-    var rowsCode = 10;
+function createGame(colors, levelGame, rowsCode) {
     //Calls functions
     createRowsColumns(levelGame, rowsCode);
     createOptionsColors(colors, levelGame)
@@ -23,6 +22,7 @@ function createGame(colors, levelGame) {
 //Create buttons with level
 function levelButtons(colors) {
     var buttonsChoose = '<h1>level</h1>';
+    buttonsChoose += '<p>Pogingen: <input id="numberOfRows" type="number" value="10" min="1" max="10"></p>';
     var levelText = 0;
     //Creates button for the levels
     for (var level = 0; level <= colors.length; level++) {
@@ -37,6 +37,12 @@ function levelButtons(colors) {
 
 //Choose level
 function chooseLevel(colors) {
+    var rowsCode = 10;
+    //Change input rows
+    document.getElementById('numberOfRows').onchange = function() {
+        rowsCode = changeRows();
+    };
+
     //Calls function with the colors
     var buttons = document.getElementsByTagName("button");
     for (var b = 0; b < buttons.length; b++) {
@@ -45,9 +51,18 @@ function chooseLevel(colors) {
             //Value in var
             var levelGame = this.value;
             //Calls function and send params
-            createGame(colors, levelGame)
+            createGame(colors, levelGame, rowsCode)
         };
     }
+}
+
+function changeRows() {
+    //Get value input
+    rowsCode = document.getElementById('numberOfRows').value;
+    if (rowsCode > 10 || rowsCode < 1) {
+        rowsCode = 10;
+    }
+    return rowsCode
 }
 
 function createRowsColumns(levelGame, rowsCode) {
@@ -93,17 +108,28 @@ function createOptionsColors(colors, levelGame) {
 }
 
 //Check code user with code computer
-function checkCode(codeToGuess, chosenColor, rows) {
+function checkCode(codeToGuess, chosenColor, rows, colors) {
     var errorsCode = 0;
-    var colorRightPlace = []
+    var colorRightPlace = [];
     var correctcode = true;
 
-    for(var placeVal = codeToGuess.length; placeVal--;) {
-        if(codeToGuess[placeVal] == chosenColor[placeVal]) {
-            colorRightPlace.push(chosenColor[placeVal]);
-        }
-    }
+    colors.forEach(function(color) {
+        colorRightPlace.push( { color: color, present: 0} );
+    });
 
+    for(var placeVal = codeToGuess.length; placeVal--;) {
+        //if(codeToGuess[placeVal] == chosenColor[placeVal]) {
+            var chosenColorNow = chosenColor[placeVal];
+            console.log(chosenColorNow);
+            var indexColor = colorRightPlace.indexOf([chosenColorNow]);
+            console.log(indexColor);
+            if (indexColor !== -1) {
+                colorRightPlace[indexColor]['present'] = colorRightPlace[indexColor]['present'] + 1;
+            }
+
+        //}
+    }
+    console.log(colorRightPlace);
     for(var placeVal = codeToGuess.length; placeVal--;) {
         //put id in an val
         var errorElementId = 'rows'+rows+'columnsError'+errorsCode+'';
@@ -114,9 +140,8 @@ function checkCode(codeToGuess, chosenColor, rows) {
             correctcode = false;
             //search for value if it exists
             var exists = codeToGuess.indexOf(chosenColor[placeVal]);
-
             var inArray = colorRightPlace.indexOf(chosenColor[placeVal]);
-            console.log(colorRightPlace);
+
             if (inArray == -1) {
                 if (exists !== -1) {
                     //Give element an class
@@ -198,7 +223,7 @@ function clickColors(colors, levelGame, codeToGuess, rowsCode) {
 
                 columns++
                 if (columns == levelGame) {
-                    correctcode = checkCode(codeToGuess, chosenColor, rows);
+                    correctcode = checkCode(codeToGuess, chosenColor, rows, colors);
                     //Correct code
                     if (correctcode == true) {
                         //function nodig
@@ -244,5 +269,6 @@ function createCode(colors, levelGame) {
     console.log(newCode);
     return newCode;
 }
+
 
 loadHtml();

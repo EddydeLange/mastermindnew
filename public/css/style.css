@@ -4,7 +4,8 @@ body {
     font-size: 14px;
 }
 .wrapper {
-    width: 960px;
+
+    width: calc(100% - 100px);
     margin: 0 auto;
 }
 .logo {
