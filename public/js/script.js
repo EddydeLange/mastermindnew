@@ -107,29 +107,35 @@ function createOptionsColors(colors, levelGame) {
     document.getElementById("colorsToChoose").innerHTML = colorsChoses;
 }
 
-//Check code user with code computer
-function checkCode(codeToGuess, chosenColor, rows, colors) {
+function giveMessageRightPositon(codeToGuess, chosenColor, rows, colors, colorRightPlace) {
     var errorsCode = 0;
-    var colorRightPlace = [];
-    var correctcode = true;
-
-    colors.forEach(function(color) {
-        colorRightPlace.push( { color: color, present: 0} );
-    });
-
+    //Check if color is on the right position
     for(var placeVal = codeToGuess.length; placeVal--;) {
-        //if(codeToGuess[placeVal] == chosenColor[placeVal]) {
-            var chosenColorNow = chosenColor[placeVal];
-            console.log(chosenColorNow);
-            var indexColor = colorRightPlace.indexOf([chosenColorNow]);
-            console.log(indexColor);
-            if (indexColor !== -1) {
-                colorRightPlace[indexColor]['present'] = colorRightPlace[indexColor]['present'] + 1;
-            }
+        //put id in an val
+        var errorElementId = 'rows'+rows+'columnsError'+errorsCode+'';
+        //find element with the id
+        var errorElement = document.getElementById(errorElementId);
 
-        //}
+        if(codeToGuess[placeVal] == chosenColor[placeVal]) {
+            for (var i = 0; i < colorRightPlace.length; i++) {
+                if (colorRightPlace[i]['present'] !== 0 && colorRightPlace[i]['color'] == chosenColor[placeVal]) {
+                    colorRightPlace[i]['present'] = colorRightPlace[i]['present'] - 1;
+                    errorElement.className += " errorRed";
+                    errorsCode++
+                }
+            }
+        }
     }
-    console.log(colorRightPlace);
+    //Return array
+    return {
+        errorsCode : errorsCode,
+        colorRightPlace : colorRightPlace
+    };
+}
+
+function giveMessageWrongPositon(codeToGuess, chosenColor, rows, colors, errorsCode, colorRightPlace) {
+    var correctcode = true;
+    //Check color is on other position instead of right position
     for(var placeVal = codeToGuess.length; placeVal--;) {
         //put id in an val
         var errorElementId = 'rows'+rows+'columnsError'+errorsCode+'';
@@ -138,24 +144,47 @@ function checkCode(codeToGuess, chosenColor, rows, colors) {
 
         if(codeToGuess[placeVal] !== chosenColor[placeVal]) {
             correctcode = false;
-            //search for value if it exists
             var exists = codeToGuess.indexOf(chosenColor[placeVal]);
-            var inArray = colorRightPlace.indexOf(chosenColor[placeVal]);
-
-            if (inArray == -1) {
-                if (exists !== -1) {
-                    //Give element an class
-                    errorElement.className += " errorWhite";
-                    errorsCode++
+            if (exists !== -1) {
+                for (var i = 0; i < colorRightPlace.length; i++) {
+                    if (colorRightPlace[i]['present'] !== 0 && colorRightPlace[i]['color'] == chosenColor[placeVal]) {
+                        colorRightPlace[i]['present'] = colorRightPlace[i]['present'] - 1;
+                        errorElement.className += " errorWhite";
+                        errorsCode++
+                    }
                 }
             }
-
-        } else if(codeToGuess[placeVal] == chosenColor[placeVal]) {
-            errorElement.className += " errorRed";
-            errorsCode++
         }
     }
+    return correctcode;
+}
 
+//Check code user with code computer
+function checkCode(codeToGuess, chosenColor, rows, colors) {
+    var colorRightPlace = [];
+
+    //Creates literal object with color and how much it is present
+    colors.forEach(function(color) {
+        colorRightPlace.push( { color: color, present: 0} );
+    });
+
+    //Check how much an color is in the guessed array
+    codeToGuess.forEach(function(code) {
+        for (var i = 0; i < colorRightPlace.length; i++) {
+            if (colorRightPlace[i].color == code) {
+                // var indexColor = colorRightPlace.indexOf([i]['color'][code]);
+                // console.log(indexColor);
+                colorRightPlace[i]['present'] = colorRightPlace[i]['present'] + 1;
+            }
+        }
+    });
+
+    returnedArray = giveMessageRightPositon(codeToGuess, chosenColor, rows, colors, colorRightPlace);
+
+    errorsCode = returnedArray.errorsCode;
+    colorRightPlace = returnedArray.colorRightPlace;
+
+    correctcode = giveMessageWrongPositon(codeToGuess, chosenColor, rows, colors, errorsCode, colorRightPlace);
 
 
     document.getElementById('rows'+rows).setAttribute('data-done', 'true');
@@ -192,7 +221,7 @@ function addColor(color, chosenColor, elementId, rows, columns) {
         //add chosen color in an array
         chosenColor.push(color);
     }
-    //Returned array
+    //Return array
     return {
         chosenColor : chosenColor,
         columns : columns
