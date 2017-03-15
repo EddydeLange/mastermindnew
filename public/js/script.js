@@ -1,26 +1,29 @@
+var colors=['lightBlue','red','green','purple','yellow','pink','orange','lightGreen'];
+var rowsCode;
+var levelGame;
+var chosenColor = [];
+var rows;
+var errorsCode;
 
-var rowsCode = 10;
 function loadHtml() {
-    //Get colors
-    colors = colorToChoose();
     //Creates buttons
-    levelButtons(colors);
+    levelButtons();
     //Choose level function
-    chooseLevel(colors);
+    chooseLevel();
 }
 
 //create html for the game
-function createGame(colors, levelGame, rowsCode) {
+function createGame() {
     //Calls functions
-    createRowsColumns(levelGame, rowsCode);
-    createOptionsColors(colors, levelGame)
+    createRowsColumns();
+    createOptionsColors()
     //Creates code to guess
-    var codeToGuess = createCode(colors, levelGame);
-    clickColors(colors, levelGame, codeToGuess, rowsCode);
+    var codeToGuess = createCode();
+    clickColors(codeToGuess);
 }
 
 //Create buttons with level
-function levelButtons(colors) {
+function levelButtons() {
     var buttonsChoose = '<h1>level</h1>';
     buttonsChoose += '<p>Pogingen: <input id="numberOfRows" type="number" value="10" min="1" max="10"></p>';
     var levelText = 0;
@@ -35,9 +38,8 @@ function levelButtons(colors) {
     document.getElementById("colorsToChoose").innerHTML = buttonsChoose;
 }
 
-//Choose level
-function chooseLevel(colors) {
-    var rowsCode = 10;
+function chooseLevel() {
+    rowsCode = 10;
     //Change input rows
     document.getElementById('numberOfRows').onchange = function() {
         rowsCode = changeRows();
@@ -49,9 +51,9 @@ function chooseLevel(colors) {
         //Button on click level
         buttons[b].onclick = function(e) {
             //Value in var
-            var levelGame = this.value;
-            //Calls function and send params
-            createGame(colors, levelGame, rowsCode)
+            levelGame = this.value;
+            //Calls function
+            createGame()
         };
     }
 }
@@ -65,7 +67,7 @@ function changeRows() {
     return rowsCode
 }
 
-function createRowsColumns(levelGame, rowsCode) {
+function createRowsColumns() {
     //creating var's
     var answersUser = '';
     //Creates 10 rows
@@ -88,7 +90,7 @@ function createRowsColumns(levelGame, rowsCode) {
     document.getElementById("gameTable").innerHTML = answersUser;
 }
 
-function createOptionsColors(colors, levelGame) {
+function createOptionsColors() {
     //creating var's
     var colorsChoses = '';
     var whenBreak = 0;
@@ -107,8 +109,8 @@ function createOptionsColors(colors, levelGame) {
     document.getElementById("colorsToChoose").innerHTML = colorsChoses;
 }
 
-function giveMessageRightPositon(codeToGuess, chosenColor, rows, colors, colorRightPlace) {
-    var errorsCode = 0;
+function giveMessageRightPositon(codeToGuess, colorPresent) {
+    errorsCode = 0;
     //Check if color is on the right position
     for(var placeVal = codeToGuess.length; placeVal--;) {
         //put id in an val
@@ -117,23 +119,20 @@ function giveMessageRightPositon(codeToGuess, chosenColor, rows, colors, colorRi
         var errorElement = document.getElementById(errorElementId);
 
         if(codeToGuess[placeVal] == chosenColor[placeVal]) {
-            for (var i = 0; i < colorRightPlace.length; i++) {
-                if (colorRightPlace[i]['present'] !== 0 && colorRightPlace[i]['color'] == chosenColor[placeVal]) {
-                    colorRightPlace[i]['present'] = colorRightPlace[i]['present'] - 1;
+            for (var i = 0; i < colorPresent.length; i++) {
+                if (colorPresent[i]['present'] !== 0 && colorPresent[i]['color'] == chosenColor[placeVal]) {
+                    colorPresent[i]['present'] = colorPresent[i]['present'] - 1;
                     errorElement.className += " errorRed";
                     errorsCode++
                 }
             }
         }
     }
-    //Return array
-    return {
-        errorsCode : errorsCode,
-        colorRightPlace : colorRightPlace
-    };
+    return colorPresent;
+
 }
 
-function giveMessageWrongPositon(codeToGuess, chosenColor, rows, colors, errorsCode, colorRightPlace) {
+function giveMessageWrongPositon(codeToGuess, colorPresent) {
     var correctcode = true;
     //Check color is on other position instead of right position
     for(var placeVal = codeToGuess.length; placeVal--;) {
@@ -146,9 +145,9 @@ function giveMessageWrongPositon(codeToGuess, chosenColor, rows, colors, errorsC
             correctcode = false;
             var exists = codeToGuess.indexOf(chosenColor[placeVal]);
             if (exists !== -1) {
-                for (var i = 0; i < colorRightPlace.length; i++) {
-                    if (colorRightPlace[i]['present'] !== 0 && colorRightPlace[i]['color'] == chosenColor[placeVal]) {
-                        colorRightPlace[i]['present'] = colorRightPlace[i]['present'] - 1;
+                for (var i = 0; i < colorPresent.length; i++) {
+                    if (colorPresent[i]['present'] !== 0 && colorPresent[i]['color'] == chosenColor[placeVal]) {
+                        colorPresent[i]['present'] = colorPresent[i]['present'] - 1;
                         errorElement.className += " errorWhite";
                         errorsCode++
                     }
@@ -160,31 +159,26 @@ function giveMessageWrongPositon(codeToGuess, chosenColor, rows, colors, errorsC
 }
 
 //Check code user with code computer
-function checkCode(codeToGuess, chosenColor, rows, colors) {
-    var colorRightPlace = [];
+function checkCode(codeToGuess) {
+    var colorPresent = [];
 
     //Creates literal object with color and how much it is present
     colors.forEach(function(color) {
-        colorRightPlace.push( { color: color, present: 0} );
+        colorPresent.push( { color: color, present: 0} );
     });
 
     //Check how much an color is in the guessed array
     codeToGuess.forEach(function(code) {
-        for (var i = 0; i < colorRightPlace.length; i++) {
-            if (colorRightPlace[i].color == code) {
-                // var indexColor = colorRightPlace.indexOf([i]['color'][code]);
+        for (var i = 0; i < colorPresent.length; i++) {
+            if (colorPresent[i].color == code) {
+                // var indexColor = colorPresent.indexOf([i]['color'][code]);
                 // console.log(indexColor);
-                colorRightPlace[i]['present'] = colorRightPlace[i]['present'] + 1;
+                colorPresent[i]['present'] = colorPresent[i]['present'] + 1;
             }
         }
     });
-
-    returnedArray = giveMessageRightPositon(codeToGuess, chosenColor, rows, colors, colorRightPlace);
-
-    errorsCode = returnedArray.errorsCode;
-    colorRightPlace = returnedArray.colorRightPlace;
-
-    correctcode = giveMessageWrongPositon(codeToGuess, chosenColor, rows, colors, errorsCode, colorRightPlace);
+    colorPresent = giveMessageRightPositon(codeToGuess, colorPresent);
+    correctcode = giveMessageWrongPositon(codeToGuess, colorPresent);
 
 
     document.getElementById('rows'+rows).setAttribute('data-done', 'true');
@@ -193,7 +187,7 @@ function checkCode(codeToGuess, chosenColor, rows, colors) {
 }
 
 //Removes color you selected
-function undoColor(rows, elementId, chosenColor, columns) {
+function undoColor(elementId, columns) {
     document.getElementById(elementId).onclick = function() {
         var dataDone = document.getElementById('rows'+rows).getAttribute('data-done');
         if (dataDone !== 'true') {
@@ -204,7 +198,7 @@ function undoColor(rows, elementId, chosenColor, columns) {
     }
 }
 
-function addColor(color, chosenColor, elementId, rows, columns) {
+function addColor(color, elementId, columns) {
     var changed = false;
 
     var index = chosenColor.indexOf('');
@@ -221,18 +215,15 @@ function addColor(color, chosenColor, elementId, rows, columns) {
         //add chosen color in an array
         chosenColor.push(color);
     }
-    //Return array
-    return {
-        chosenColor : chosenColor,
-        columns : columns
-    };
+
+    return columns
+
 }
 
-function clickColors(colors, levelGame, codeToGuess, rowsCode) {
+function clickColors(codeToGuess) {
     var columns = 0;
-    var rows = 0;
+    rows = 0;
     var paragraphText = document.createElement('h2');
-    var chosenColor = [];
     //Foreach color in array creating click function
     colors.forEach(function(color) {
         document.getElementById(color).onclick = function() {
@@ -243,20 +234,19 @@ function clickColors(colors, levelGame, codeToGuess, rowsCode) {
                 //Creates var current place
                 var elementId = "rows"+rows+"columns"+columns;
                 //calls function for adding color
-                changedAdd = addColor(color, chosenColor, elementId, rows, columns);
-                //ChangedAdd is an array
-                chosenColor = changedAdd.chosenColor;
-                columns = changedAdd.columns;
+                columns = addColor(color, elementId, columns);
                 //Calls funtion for undo color
-                undoColor(rows, elementId, chosenColor, columns);
+                undoColor(elementId, columns);
 
                 columns++
                 if (columns == levelGame) {
-                    correctcode = checkCode(codeToGuess, chosenColor, rows, colors);
+                    correctcode = checkCode(codeToGuess, colors);
                     //Correct code
                     if (correctcode == true) {
-                        //function nodig
-                        paragraphText.textContent = 'Correct';
+                        setTimeout(function () {
+                            endGame(codeToGuess, correctcode);
+                        }, 2000);
+
                     } else { //Incorrect code
                         //empty array
                         chosenColor = [];
@@ -267,29 +257,38 @@ function clickColors(colors, levelGame, codeToGuess, rowsCode) {
                         columns = 0;
 
                         if (rowsCode == rows) {
-                            //Add text to element
-                            paragraphText.textContent = 'Game-Over';
-
-                            document.getElementById("gameTable").appendChild(paragraphText);
-
+                            paragraphText.textContent = '';
+                            setTimeout(function () {
+                                endGame(codeToGuess, correctcode);
+                            }, 2000);
                         }
                     }
-                    // var codeWas = document.createElement('h2').textContent = codeToGuess;
-                    // document.getElementById("gameTable").appendChild(codeWas);
+                    document.getElementById("gameTable").appendChild(paragraphText);
                 }
             }
         }
     });
 }
 
-//Colors
-function colorToChoose(colors, levelGame) {
-    var colors=['lightBlue','red','green','purple','yellow','pink','orange','lightGreen'];
-    return colors;
+function endGame(codeToGuess, correctcode) {
+    var text = '';
+    //Empty page
+    document.getElementById("gameTable").innerHTML = '';
+    document.getElementById("colorsToChoose").innerHTML = '';
+
+
+    answerComText = correctcode === true ? 'Hah... Wait what?!?! Correct?!?!... YOU DEFEATED ME...!' : 'GAME-OVER! HAHA!';
+
+    text += '<h2>'+answerComText+'</h2><br>' +
+            '<p>Correct code</p>';
+
+    document.getElementById("gameTable").innerHTML = text;
+
+
 }
 
 //Create code to guess by the user
-function createCode(colors, levelGame) {
+function createCode() {
     var newCode = [];
     for (var g = 0; g < levelGame; g++) {
         //Get random value out array en push it in other aray
@@ -298,6 +297,5 @@ function createCode(colors, levelGame) {
     console.log(newCode);
     return newCode;
 }
-
 
 loadHtml();
