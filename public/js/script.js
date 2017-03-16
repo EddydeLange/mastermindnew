@@ -1,11 +1,12 @@
 var colors=['lightBlue','red','green','purple','yellow','pink','orange','lightGreen'];
 var rowsCode;
-var levelGame;
+var levelGame = 0;
 var chosenColor = [];
 var rows;
 var errorsCode;
 
 function loadHtml() {
+    document.getElementById("gameTable").innerHTML = '';
     //Creates buttons
     levelButtons();
     //Choose level function
@@ -25,7 +26,7 @@ function createGame() {
 //Create buttons with level
 function levelButtons() {
     var buttonsChoose = '<h1>level</h1>';
-    buttonsChoose += '<p>Pogingen: <input id="numberOfRows" type="number" value="10" min="1" max="10"></p>';
+    buttonsChoose += '<p>Pogingen: <input id="numberOfRows" type="number" value="3" min="1" max="10"></p>';
     var levelText = 0;
     //Creates button for the levels
     for (var level = 0; level <= colors.length; level++) {
@@ -39,7 +40,7 @@ function levelButtons() {
 }
 
 function chooseLevel() {
-    rowsCode = 10;
+    rowsCode = document.getElementById('numberOfRows').value;
     //Change input rows
     document.getElementById('numberOfRows').onchange = function() {
         rowsCode = changeRows();
@@ -109,7 +110,7 @@ function createOptionsColors() {
     document.getElementById("colorsToChoose").innerHTML = colorsChoses;
 }
 
-function giveMessageRightPositon(codeToGuess, colorPresent) {
+    function giveMessageRightPositon(codeToGuess, colorPresent) {
     errorsCode = 0;
     //Check if color is on the right position
     for(var placeVal = codeToGuess.length; placeVal--;) {
@@ -237,7 +238,6 @@ function clickColors(codeToGuess) {
                 columns = addColor(color, elementId, columns);
                 //Calls funtion for undo color
                 undoColor(elementId, columns);
-
                 columns++
                 if (columns == levelGame) {
                     correctcode = checkCode(codeToGuess, colors);
@@ -272,19 +272,38 @@ function clickColors(codeToGuess) {
 
 function endGame(codeToGuess, correctcode) {
     var text = '';
+    var maxLevel = Number(levelGame);
     //Empty page
-    document.getElementById("gameTable").innerHTML = '';
     document.getElementById("colorsToChoose").innerHTML = '';
 
+    answerComText = correctcode === true ? 'Hah... Wait what? Correct...!!! <br>YOU DEFEATED ME...!' : 'GAME-OVER! HAHA!';
+    text += '<h3>'+answerComText+'</h3><br>' +
+            '<p>Correct code:</p>';
+    //Created cirkels with the correct code
+    for (var i = 0; i < codeToGuess.length; i++) {
+        text += '<td class="'+codeToGuess[i]+' table-responsive"></td>';
+    }
 
-    answerComText = correctcode === true ? 'Hah... Wait what?!?! Correct?!?!... YOU DEFEATED ME...!' : 'GAME-OVER! HAHA!';
+    text += '<br><button id="menu">Menu</button>' +
+            '<button id="restartLevel">Restart level</button>' +
+            '<button id="nextLevel">Next level</button>';
 
-    text += '<h2>'+answerComText+'</h2><br>' +
-            '<p>Correct code</p>';
+    //Add variable with html in element
+    document.getElementById("colorsToChoose").innerHTML = text;
 
-    document.getElementById("gameTable").innerHTML = text;
-
-
+    document.getElementById("restartLevel").addEventListener("click", createGame);
+    document.getElementById("nextLevel").onclick = function() {
+        levelGame = Number(levelGame);
+        levelGame++
+        if (colors.length <= levelGame) {
+            alert('You reached the max level, Congratulations!')
+            loadHtml();
+        } else {
+            createGame();
+        }
+    };
+    
+    document.getElementById("menu").addEventListener("click", loadHtml);
 }
 
 //Create code to guess by the user
@@ -297,5 +316,7 @@ function createCode() {
     console.log(newCode);
     return newCode;
 }
+
+
 
 loadHtml();
