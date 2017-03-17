@@ -25,18 +25,36 @@ function createGame() {
 
 //Create buttons with level
 function levelButtons() {
-    var buttonsChoose = '<h1>level</h1>';
-    buttonsChoose += '<p>Pogingen: <input id="numberOfRows" type="number" value="3" min="1" max="10"></p>';
-    var levelText = 0;
+    var createButtonsChoose = '';
+
+    var title = document.createElement("H1");
+    title.innerHTML = "Level";
+    document.getElementById("colorsToChoose").appendChild(title);
+
+    //buttonsChoose += '<p>Pogingen: <input id="numberOfRows" type="number" value="5" min="1" max="10"></p>';
+
     //Creates button for the levels
+
+    var levelText = 0;
+    var buttons = document.createElement("div");
     for (var level = 0; level <= colors.length; level++) {
         if (level >= 2) {
             levelText++;
-            buttonsChoose += '<button class="levelButton" value="'+level+'" type="button">'+levelText+'</button> '
+            //var createButtonsChoose += '<button class="levelButton" value="'+level+'" type="button">'+levelText+'</button> '
+            //var createButtonsChoose = document.createTextNode(levelText);
+            var buttonTag = document.createElement("button");
+            buttonTag.className = "levelButton";
+            buttonTag.innerHTML = levelText;
+            buttonTag.value = level;
+
+            //put in UI
+            console.log(buttonTag);
+
+            buttons.appendChild(buttonTag);
+
         }
     }
-    //put in UI
-    document.getElementById("colorsToChoose").innerHTML = buttonsChoose;
+    document.getElementById("colorsToChoose").appendChild(buttons);
 }
 
 function chooseLevel() {
@@ -302,7 +320,7 @@ function endGame(codeToGuess, correctcode) {
             createGame();
         }
     };
-    
+
     document.getElementById("menu").addEventListener("click", loadHtml);
 }
 
