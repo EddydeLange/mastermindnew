@@ -22,3 +22,9 @@
     width: 100px;
     height: 50px;
 }
+
+.mastermind #checkButtonCode {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    width: 100%;
+}

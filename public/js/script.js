@@ -4,6 +4,7 @@ var levelGame = 0;
 var chosenColor = [];
 var rows;
 var errorsCode;
+var maxColumns;
 
 function loadHtml() {
     document.getElementById("gameTable").innerHTML = '';
@@ -31,27 +32,30 @@ function levelButtons() {
     title.innerHTML = "Level";
     document.getElementById("colorsToChoose").appendChild(title);
 
-    //buttonsChoose += '<p>Pogingen: <input id="numberOfRows" type="number" value="5" min="1" max="10"></p>';
+    var buttonsChoose = document.createElement("p");
+    buttonsChoose.innerHTML = "Pogingen: ";
+    document.getElementById("colorsToChoose").appendChild(buttonsChoose);
+
+    var inputRows = document.createElement("input");
+    inputRows.id = 'numberOfRows';
+    inputRows.type = 'number';
+    inputRows.value = '5';
+    inputRows.min = '1';
+    inputRows.max = '10';
+    buttonsChoose.appendChild(inputRows);
 
     //Creates button for the levels
-
     var levelText = 0;
     var buttons = document.createElement("div");
     for (var level = 0; level <= colors.length; level++) {
         if (level >= 2) {
             levelText++;
-            //var createButtonsChoose += '<button class="levelButton" value="'+level+'" type="button">'+levelText+'</button> '
-            //var createButtonsChoose = document.createTextNode(levelText);
             var buttonTag = document.createElement("button");
             buttonTag.className = "levelButton";
             buttonTag.innerHTML = levelText;
             buttonTag.value = level;
 
-            //put in UI
-            console.log(buttonTag);
-
             buttons.appendChild(buttonTag);
-
         }
     }
     document.getElementById("colorsToChoose").appendChild(buttons);
@@ -98,6 +102,7 @@ function createRowsColumns() {
                 var ColumnsRows = 'rows'+ i +'columns' + t +'';
                 answersUser += '<td id="'+ ColumnsRows +'" class="table-responsive"></td>';
             }
+            maxColumns = t;
             //Creates td with error if position color is correct or not
             for (var a = 0; a < levelGame; a++) {
                 var ColumnsError = 'rows'+ i +'columnsError' + a +'';
@@ -128,7 +133,7 @@ function createOptionsColors() {
     document.getElementById("colorsToChoose").innerHTML = colorsChoses;
 }
 
-    function giveMessageRightPositon(codeToGuess, colorPresent) {
+function giveMessageRightPositon(codeToGuess, colorPresent) {
     errorsCode = 0;
     //Check if color is on the right position
     for(var placeVal = codeToGuess.length; placeVal--;) {
@@ -190,8 +195,6 @@ function checkCode(codeToGuess) {
     codeToGuess.forEach(function(code) {
         for (var i = 0; i < colorPresent.length; i++) {
             if (colorPresent[i].color == code) {
-                // var indexColor = colorPresent.indexOf([i]['color'][code]);
-                // console.log(indexColor);
                 colorPresent[i]['present'] = colorPresent[i]['present'] + 1;
             }
         }
@@ -207,6 +210,7 @@ function checkCode(codeToGuess) {
 
 //Removes color you selected
 function undoColor(elementId, columns) {
+    console.log(elementId);
     document.getElementById(elementId).onclick = function() {
         var dataDone = document.getElementById('rows'+rows).getAttribute('data-done');
         if (dataDone !== 'true') {
@@ -214,38 +218,49 @@ function undoColor(elementId, columns) {
             document.getElementById(this.id).className = "table-responsive";
             chosenColor[columns] = '';
         }
+        if (dataDone == 'progress') {
+            //Deletes element
+            document.getElementById("checkButtonCode").style.display = "none";
+            document.getElementById('rows'+rows).setAttribute('data-done', 'false');
+        }
     }
 }
 
 function addColor(color, elementId, columns) {
-    var changed = false;
+    console.log(elementId);
+    var dataDone = document.getElementById('rows'+rows).getAttribute('data-done');
+    if (dataDone !== 'progress') {
+        var changed = false;
+        var index = chosenColor.indexOf('');
+        if (index !== -1) {
+            chosenColor[index] = color;
+            //creates class for new position of color
+            elementId = "rows"+rows+"columns"+index;
+            changed = true;
+            columns--
+        }
 
-    var index = chosenColor.indexOf('');
-    if (index !== -1) {
-        chosenColor[index] = color;
-        //creates class for new position of color
-        elementId = "rows"+rows+"columns"+index;
-        changed = true;
-        columns--
+        //Changes classname
+        document.getElementById(elementId).className += " "+color;
+        if (changed == false) {
+            //add chosen color in an array
+            chosenColor.push(color);
+        }
     }
-    //Changes classname
-    document.getElementById(elementId).className += " "+color;
-    if (changed == false) {
-        //add chosen color in an array
-        chosenColor.push(color);
-    }
-
     return columns
+
 
 }
 
 function clickColors(codeToGuess) {
     var columns = 0;
     rows = 0;
-    var paragraphText = document.createElement('h2');
+    var paragraphText = document.createElement('h4');
+    var checkButton;
     //Foreach color in array creating click function
     colors.forEach(function(color) {
         document.getElementById(color).onclick = function() {
+
             //check if your dont cross the limit of rows
             if (rows < rowsCode) {
                 //empty text with error
@@ -257,35 +272,60 @@ function clickColors(codeToGuess) {
                 //Calls funtion for undo color
                 undoColor(elementId, columns);
                 columns++
+
+
                 if (columns == levelGame) {
-                    correctcode = checkCode(codeToGuess, colors);
-                    //Correct code
-                    if (correctcode == true) {
-                        setTimeout(function () {
-                            endGame(codeToGuess, correctcode);
-                        }, 2000);
+                    document.getElementById("rows"+rows).setAttribute('data-done', 'progress');
+                    checkButton = createCheckButton(columns, levelGame);
 
-                    } else { //Incorrect code
-                        //empty array
-                        chosenColor = [];
-                        //Add text to element
-                        paragraphText.textContent = 'Incorrect';
-                        //new column
-                        rows++
-                        columns = 0;
+                    //Click function
+                    document.getElementById('checkButtonCode').onclick = function() {
 
-                        if (rowsCode == rows) {
-                            paragraphText.textContent = '';
+                        checkButton.style.display = "none";
+                        correctcode = checkCode(codeToGuess, colors);
+
+                        //Correct code
+                        if (correctcode == true) {
                             setTimeout(function () {
                                 endGame(codeToGuess, correctcode);
                             }, 2000);
+
+                        } else { //Incorrect code
+                            //empty array
+                            chosenColor = [];
+                            //Add text to element
+                            paragraphText.textContent = 'Incorrect';
+                            //new column
+                            rows++
+                            columns = 0;
+
+                            if (rowsCode == rows) {
+                                paragraphText.textContent = '';
+                                setTimeout(function () {
+                                    endGame(codeToGuess, correctcode);
+                                }, 2000);
+                            }
                         }
+                        document.getElementById("gameTable").appendChild(paragraphText);
                     }
-                    document.getElementById("gameTable").appendChild(paragraphText);
-                }
+                 } //else {
+                //     var elementExist = document.getElementById("checkButtonCode");
+                //     if (elementExist !== null) {
+                //
+                //     }
+                //}
             }
         }
     });
+}
+
+function createCheckButton() {
+
+    checkButton = document.createElement('button');
+    checkButton.innerHTML = 'check';
+    checkButton.id = 'checkButtonCode';
+    document.getElementById("gameTable").appendChild(checkButton);
+    return checkButton;
 }
 
 function endGame(codeToGuess, correctcode) {
@@ -294,20 +334,47 @@ function endGame(codeToGuess, correctcode) {
     //Empty page
     document.getElementById("colorsToChoose").innerHTML = '';
 
-    answerComText = correctcode === true ? 'Hah... Wait what? Correct...!!! <br>YOU DEFEATED ME...!' : 'GAME-OVER! HAHA!';
-    text += '<h3>'+answerComText+'</h3><br>' +
-            '<p>Correct code:</p>';
-    //Created cirkels with the correct code
+    var divElement = document.createElement("div");
+    var answerComText = correctcode === true ? 'Hah... Wait what? Correct...!!! <br>YOU DEFEATED ME...!' : 'GAME-OVER! HAHA!';
+
+    var h3Element = document.createElement("h3");
+    h3Element.innerHTML = answerComText;
+    divElement.appendChild(h3Element);
+
+    var brElement = document.createElement("br");
+    divElement.appendChild(brElement);
+
+    var pElement = document.createElement("p");
+    pElement.innerHTML = 'Correct code: ';
+    divElement.appendChild(pElement);
+
     for (var i = 0; i < codeToGuess.length; i++) {
-        text += '<td class="'+codeToGuess[i]+' table-responsive"></td>';
+        var finalCorrectCode = document.createElement("td");
+        finalCorrectCode.className = codeToGuess[i]+ ' table-responsive';
+        divElement.appendChild(finalCorrectCode);
     }
 
-    text += '<br><button id="menu">Menu</button>' +
-            '<button id="restartLevel">Restart level</button>' +
-            '<button id="nextLevel">Next level</button>';
+    var brElement = document.createElement("br");
+    divElement.appendChild(brElement);
+
+    var buttonMenu = document.createElement("button");
+    buttonMenu.id = 'menu';
+    buttonMenu.innerHTML = 'Menu';
+    divElement.appendChild(buttonMenu);
+
+    var buttonRestartLevel = document.createElement("button");
+    buttonRestartLevel.id = 'restartLevel';
+    buttonRestartLevel.innerHTML = 'Restart level';
+    divElement.appendChild(buttonRestartLevel);
+
+    var buttonNextLevel = document.createElement("button");
+    buttonNextLevel.id = 'nextLevel';
+    buttonNextLevel.innerHTML = 'Next level';
+    divElement.appendChild(buttonNextLevel);
+
 
     //Add variable with html in element
-    document.getElementById("colorsToChoose").innerHTML = text;
+    document.getElementById("colorsToChoose").appendChild(divElement);
 
     document.getElementById("restartLevel").addEventListener("click", createGame);
     document.getElementById("nextLevel").onclick = function() {
