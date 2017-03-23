@@ -210,9 +210,18 @@ function checkCode(codeToGuess) {
 
 //Removes color you selected
 function undoColor(elementId, columns) {
-    console.log(elementId);
+console.log(elementId);
+console.log(columns);
+var elementId = "rows"+rows+"columns"+columns;
+
+
     document.getElementById(elementId).onclick = function() {
-        var dataDone = document.getElementById('rows'+rows).getAttribute('data-done');
+
+        //get current row that is clicked
+        var numberRow = document.getElementById(this.id).parentNode.id;
+        numberRow = Number(numberRow.match(/\d+/g));
+        var dataDone = document.getElementById('rows'+numberRow).getAttribute('data-done');
+
         if (dataDone !== 'true') {
             //Changes class of color that is chosen
             document.getElementById(this.id).className = "table-responsive";
@@ -227,25 +236,25 @@ function undoColor(elementId, columns) {
 }
 
 function addColor(color, elementId, columns) {
-    console.log(elementId);
     var dataDone = document.getElementById('rows'+rows).getAttribute('data-done');
-    if (dataDone !== 'progress') {
-        var changed = false;
-        var index = chosenColor.indexOf('');
-        if (index !== -1) {
-            chosenColor[index] = color;
-            //creates class for new position of color
-            elementId = "rows"+rows+"columns"+index;
-            changed = true;
-            columns--
-        }
 
-        //Changes classname
-        document.getElementById(elementId).className += " "+color;
-        if (changed == false) {
-            //add chosen color in an array
-            chosenColor.push(color);
-        }
+    var changed = false;
+    //Search for empty spots in array
+    var index = chosenColor.indexOf('');
+    if (index !== -1) { //If it got an empty spot
+        //Put color on empty position
+        chosenColor[index] = color;
+        //creates class for new position of color
+        elementId = "rows"+rows+"columns"+index;
+        changed = true;
+        columns--;
+    }
+
+    //Changes classname
+    document.getElementById(elementId).className += " "+color;
+    if (changed == false) {
+        //add chosen color in an array
+        chosenColor.push(color);
     }
     return columns
 
@@ -259,65 +268,67 @@ function clickColors(codeToGuess) {
     var checkButton;
     //Foreach color in array creating click function
     colors.forEach(function(color) {
-        document.getElementById(color).onclick = function() {
 
+        document.getElementById(color).onclick = function() {
+            var dataDone = document.getElementById('rows'+rows).getAttribute('data-done');
             //check if your dont cross the limit of rows
             if (rows < rowsCode) {
+
                 //empty text with error
                 paragraphText.textContent = '';
                 //Creates var current place
                 var elementId = "rows"+rows+"columns"+columns;
+
                 //calls function for adding color
                 columns = addColor(color, elementId, columns);
+
                 //Calls funtion for undo color
                 undoColor(elementId, columns);
+                //Go to next column
                 columns++
-
-
                 if (columns == levelGame) {
                     document.getElementById("rows"+rows).setAttribute('data-done', 'progress');
                     checkButton = createCheckButton(columns, levelGame);
-
-                    //Click function
+                    //click funciion
                     document.getElementById('checkButtonCode').onclick = function() {
+                        //Click function
 
-                        checkButton.style.display = "none";
-                        correctcode = checkCode(codeToGuess, colors);
+                            checkButton.style.display = "none";
+                            correctcode = checkCode(codeToGuess, colors);
 
-                        //Correct code
-                        if (correctcode == true) {
-                            setTimeout(function () {
-                                endGame(codeToGuess, correctcode);
-                            }, 2000);
-
-                        } else { //Incorrect code
-                            //empty array
-                            chosenColor = [];
-                            //Add text to element
-                            paragraphText.textContent = 'Incorrect';
-                            //new column
-                            rows++
-                            columns = 0;
-
-                            if (rowsCode == rows) {
-                                paragraphText.textContent = '';
+                            //Correct code
+                            if (correctcode == true) {
                                 setTimeout(function () {
                                     endGame(codeToGuess, correctcode);
                                 }, 2000);
+
+                            } else { //Incorrect code
+                                //empty array
+                                chosenColor = [];
+                                //Add text to element
+                                paragraphText.textContent = 'Incorrect';
+                                //new row
+                                rows++
+                                columns = 0;
+
+                                if (rowsCode == rows) {
+                                    paragraphText.textContent = '';
+                                    setTimeout(function () {
+                                        endGame(codeToGuess, correctcode);
+                                    }, 2000);
+                                }
                             }
-                        }
-                        document.getElementById("gameTable").appendChild(paragraphText);
+
+                            document.getElementById("gameTable").appendChild(paragraphText);
+
+
                     }
-                 } //else {
-                //     var elementExist = document.getElementById("checkButtonCode");
-                //     if (elementExist !== null) {
-                //
-                //     }
-                //}
+                 }
             }
         }
     });
 }
+
 
 function createCheckButton() {
 
