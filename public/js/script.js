@@ -2,12 +2,22 @@ var colors=['lightBlue','red','green','purple','yellow','pink','orange','lightGr
 var rowsCode;
 var levelGame = 0;
 var chosenColor = [];
+//Wich row they are
 var rows;
+//Wich colums they are
+var columns;
+//Place errors code
 var errorsCode;
-var maxColumns;
+var gameDone = false;
+var scoreUser = 0;
+var timer = false
+//How many places are filled
+var filledPlaces = 0;
 
 function loadHtml() {
     document.getElementById("gameTable").innerHTML = '';
+    document.getElementById("colorsToChoose").innerHTML = '';
+    document.getElementById("timer").innerHTML = '';
     //Creates buttons
     levelButtons();
     //Choose level function
@@ -16,11 +26,16 @@ function loadHtml() {
 
 //create html for the game
 function createGame() {
+    document.getElementById("colorsToChoose").innerHTML = '';
+    document.getElementById("gameTable").innerHTML = '';
     //Calls functions
+
     createRowsColumns();
-    createOptionsColors()
+    createOptionsColors();
+
     //Creates code to guess
     var codeToGuess = createCode();
+    timerScore(codeToGuess);
     clickColors(codeToGuess);
 }
 
@@ -102,7 +117,6 @@ function createRowsColumns() {
                 var ColumnsRows = 'rows'+ i +'columns' + t +'';
                 answersUser += '<td id="'+ ColumnsRows +'" class="table-responsive"></td>';
             }
-            maxColumns = t;
             //Creates td with error if position color is correct or not
             for (var a = 0; a < levelGame; a++) {
                 var ColumnsError = 'rows'+ i +'columnsError' + a +'';
@@ -209,124 +223,121 @@ function checkCode(codeToGuess) {
 }
 
 //Removes color you selected
-function undoColor(elementId, columns) {
-console.log(elementId);
-console.log(columns);
-var elementId = "rows"+rows+"columns"+columns;
-
-
+function undoColor(elementId) {
+    var columnstest = columns;
     document.getElementById(elementId).onclick = function() {
-
         //get current row that is clicked
         var numberRow = document.getElementById(this.id).parentNode.id;
         numberRow = Number(numberRow.match(/\d+/g));
-        var dataDone = document.getElementById('rows'+numberRow).getAttribute('data-done');
 
+        var dataDone = document.getElementById('rows'+numberRow).getAttribute('data-done');
         if (dataDone !== 'true') {
             //Changes class of color that is chosen
             document.getElementById(this.id).className = "table-responsive";
-            chosenColor[columns] = '';
+            chosenColor[columnstest] = '';
+            filledPlaces--;
         }
         if (dataDone == 'progress') {
             //Deletes element
             document.getElementById("checkButtonCode").style.display = "none";
-            document.getElementById('rows'+rows).setAttribute('data-done', 'false');
+            document.getElementById('rows'+rows).setAttribute('data-done', 'wasProgress');
         }
     }
 }
 
 function addColor(color, elementId, columns) {
+
     var dataDone = document.getElementById('rows'+rows).getAttribute('data-done');
+    if (dataDone !== 'progress') {
+        var changed = false;
+        //Search for empty spots in array
+        var index = chosenColor.indexOf('');
 
-    var changed = false;
-    //Search for empty spots in array
-    var index = chosenColor.indexOf('');
-    if (index !== -1) { //If it got an empty spot
-        //Put color on empty position
-        chosenColor[index] = color;
-        //creates class for new position of color
-        elementId = "rows"+rows+"columns"+index;
-        changed = true;
-        columns--;
+
+        if (index !== -1) { //If it got an empty spot
+            //Put color on empty position
+            chosenColor[index] = color;
+            //creates class for new position of color
+            elementId = "rows"+rows+"columns"+index;
+            changed = true;
+            filledPlaces++;
+        }
+
+        if(document.getElementById(elementId) != null){
+            document.getElementById(elementId).className += " "+color;
+        }
+
+        if (changed == false) {
+            columns++;
+            filledPlaces++;
+            //add chosen color in an array
+            chosenColor.push(color);
+
+        }
+        return columns
     }
-
-    //Changes classname
-    document.getElementById(elementId).className += " "+color;
-    if (changed == false) {
-        //add chosen color in an array
-        chosenColor.push(color);
-    }
-    return columns
-
 
 }
 
 function clickColors(codeToGuess) {
-    var columns = 0;
+    columns = 0;
     rows = 0;
     var paragraphText = document.createElement('h4');
-    var checkButton;
+    //Create check button
+    var checkButton = createCheckButton(columns, levelGame);
     //Foreach color in array creating click function
     colors.forEach(function(color) {
-
         document.getElementById(color).onclick = function() {
+            paragraphText.textContent = '';
             var dataDone = document.getElementById('rows'+rows).getAttribute('data-done');
-            //check if your dont cross the limit of rows
-            if (rows < rowsCode) {
-
-                //empty text with error
-                paragraphText.textContent = '';
-                //Creates var current place
+            if (dataDone !== 'progress') {
                 var elementId = "rows"+rows+"columns"+columns;
-
-                //calls function for adding color
+                if (document.getElementById(elementId) != null) {
+                    //Calls funtion for undo color
+                    undoColor(elementId);
+                }
                 columns = addColor(color, elementId, columns);
-
-                //Calls funtion for undo color
-                undoColor(elementId, columns);
-                //Go to next column
-                columns++
-                if (columns == levelGame) {
-                    document.getElementById("rows"+rows).setAttribute('data-done', 'progress');
-                    checkButton = createCheckButton(columns, levelGame);
-                    //click funciion
-                    document.getElementById('checkButtonCode').onclick = function() {
-                        //Click function
-
-                            checkButton.style.display = "none";
-                            correctcode = checkCode(codeToGuess, colors);
-
-                            //Correct code
-                            if (correctcode == true) {
-                                setTimeout(function () {
-                                    endGame(codeToGuess, correctcode);
-                                }, 2000);
-
-                            } else { //Incorrect code
-                                //empty array
-                                chosenColor = [];
-                                //Add text to element
-                                paragraphText.textContent = 'Incorrect';
-                                //new row
-                                rows++
-                                columns = 0;
-
-                                if (rowsCode == rows) {
-                                    paragraphText.textContent = '';
-                                    setTimeout(function () {
-                                        endGame(codeToGuess, correctcode);
-                                    }, 2000);
-                                }
-                            }
-
-                            document.getElementById("gameTable").appendChild(paragraphText);
-
-
-                    }
-                 }
+                //All columns filled with colors
+                if (levelGame == filledPlaces) {
+                    checkButton.style.display = "inline"; //Show button
+                    document.getElementById("rows"+rows).setAttribute('data-done', 'progress'); //Give data that you can check
+                    checkButtonClick(paragraphText, codeToGuess);
+                }
             }
         }
     });
+}
+
+function checkButtonClick(paragraphText, codeToGuess) {
+    document.getElementById('checkButtonCode').onclick = function() {
+        filledPlaces = 0;
+        checkButton.style.display = "none";
+        correctcode = checkCode(codeToGuess, colors);
+        //Correct code
+        if (correctcode == true) {
+            timer = false;
+            setTimeout(function () {
+                endGame(codeToGuess, correctcode);
+            }, 1000);
+
+        } else { //Incorrect code
+            //empty array
+            chosenColor = [];
+            //Add text to element
+            paragraphText.textContent = 'Incorrect';
+            //new row
+            rows++
+            columns = 0;
+
+            if (rowsCode == rows) {
+                paragraphText.textContent = '';
+                setTimeout(function () {
+                    endGame(codeToGuess, correctcode);
+                }, 2000);
+            }
+        }
+        document.getElementById("gameTable").appendChild(paragraphText);
+    }
 }
 
 
@@ -335,6 +346,7 @@ function createCheckButton() {
     checkButton = document.createElement('button');
     checkButton.innerHTML = 'check';
     checkButton.id = 'checkButtonCode';
+    checkButton.style.display = "none";
     document.getElementById("gameTable").appendChild(checkButton);
     return checkButton;
 }
@@ -380,8 +392,15 @@ function endGame(codeToGuess, correctcode) {
 
     var buttonNextLevel = document.createElement("button");
     buttonNextLevel.id = 'nextLevel';
-    buttonNextLevel.innerHTML = 'Next level';
+    buttonNextLevel.innerHTML = 'Volgende level';
     divElement.appendChild(buttonNextLevel);
+
+    if (correctcode == true) {
+        var addHighscore = document.createElement("button");
+        addHighscore.id = 'addHighscore';
+        addHighscore.innerHTML = 'Highscore toevoegen';
+        divElement.appendChild(addHighscore);
+    }
 
 
     //Add variable with html in element
@@ -400,6 +419,9 @@ function endGame(codeToGuess, correctcode) {
     };
 
     document.getElementById("menu").addEventListener("click", loadHtml);
+    if (correctcode == true) {
+        document.getElementById("addHighscore").addEventListener("click", loadHtml);
+    }
 }
 
 //Create code to guess by the user
@@ -413,6 +435,35 @@ function createCode() {
     return newCode;
 }
 
+function timerScore(codeToGuess) {
+    timer = true;
+    var timerScore = 1000
+    document.getElementById("timer").innerHTML = "Score: " +timerScore;
+    //CountDown
+    var score = setInterval(function() {
+        if (timer == true) {
+            timerScore--;
+            if(timerScore < 0) {
+                clearInterval(score);
+                var correctcode = false;
+                endGame(codeToGuess, correctcode);
+            } else {
+                document.getElementById("timer").innerHTML = "Score: " + timerScore.toString();//change number
+                scoreUser = timerScore;
+            }
+        }
+    }, 1000);
+}
 
+function addHighscore(){
+
+    alert();
+    // $.ajax ({
+    //   url: "yourPageName.php",
+    //   data: { action : assign }, //optional
+    //   success: function( result ) {
+    //       //do something after you receive the result
+    //   }
+}
 
 loadHtml();
