@@ -107,25 +107,25 @@ function changeRows() {
 
 function createRowsColumns() {
     //creating var's
-    var answersUser = '';
+    var userGameHtml = '';
     //Creates 10 rows
     for (var i = 0; i < rowsCode; i++) {
         //How much rows 2,3....
-        answersUser += '<tr id="rows'+i+'" data-done="false">';
+        userGameHtml += '<tr id="rows'+i+'" data-done="false">';
             //Creates cirkels where color could put in
             for (var t = 0; t < levelGame; t++) {
                 var ColumnsRows = 'rows'+ i +'columns' + t +'';
-                answersUser += '<td id="'+ ColumnsRows +'" class="table-responsive"></td>';
+                userGameHtml += '<td id="'+ ColumnsRows +'" class="table-responsive"></td>';
             }
             //Creates td with error if position color is correct or not
             for (var a = 0; a < levelGame; a++) {
                 var ColumnsError = 'rows'+ i +'columnsError' + a +'';
-                answersUser += '<td id="'+ ColumnsError +'" class="smallCircles table-responsive"></td>';
+                userGameHtml += '<td id="'+ ColumnsError +'" class="smallCircles table-responsive"></td>';
             }
-        answersUser += '</tr>';
+        userGameHtml += '</tr>';
     }
     //Put in UI
-    document.getElementById("gameTable").innerHTML = answersUser;
+    document.getElementById("gameTable").innerHTML = userGameHtml;
 }
 
 function createOptionsColors() {
